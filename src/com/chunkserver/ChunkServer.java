@@ -9,6 +9,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 //import java.util.Arrays;
 
@@ -29,31 +31,22 @@ import com.interfaces.ChunkServerInterface;
  */
 
 public class ChunkServer implements ChunkServerInterface {
-//	final static String filePath = "C:\\Users\\shahram\\Documents\\TinyFS-2\\csci485Disk\\";	//or C:\\newfile.txt
-//	private static long counter;
-	final static String counterFilePath = "count";
-	private File counterFile;
+	private static String filePath;	
+	private static long counter;
 	
 	/**
 	 * Initialize the chunk server
 	 */
 	public ChunkServer(){
-		counterFile = new File(counterFilePath);
-		BufferedWriter bw = null;
-	    try {
-			if(!counterFile.exists() || counterFile.isDirectory()) { 
-				bw = new BufferedWriter(new FileWriter(counterFile));
-				bw.write("0");
+		filePath = System.getProperty("user.dir") + "/chunks";
+		if (!Files.exists(Paths.get(filePath))) {
+			try {
+				Files.createDirectories(Paths.get(filePath));
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-	    } catch( IOException e){
-	    	e.printStackTrace();
-	    } finally {
-	    	try {
-		    	if(bw != null) bw.close();
-	    	} catch (IOException e){
-	    		e.printStackTrace();
-	    	}
-	    }
+		}
+		counter = new File(filePath).listFiles().length;
 	    
 	}
 	
@@ -62,27 +55,8 @@ public class ChunkServer implements ChunkServerInterface {
 	 * Return the chunk handle of the last chunk in the file.
 	 */
 	public String createChunk() {
-		BufferedReader br = null;
-		BufferedWriter bw = null;
-		try {
-			br = new BufferedReader(new FileReader(counterFile));
-			long counter = Long.parseLong(br.readLine());
-			String handle = "chunk" + counter;
-			bw = new BufferedWriter(new FileWriter(counterFile));
-			counter++;
-			bw.write("" + counter);
-			return handle;
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (br != null) br.close();
-				if (bw != null) bw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return null;
+		counter++;
+		return "chunks/chunk" + counter;
 	}
 	
 	/**
