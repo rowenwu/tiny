@@ -38,8 +38,9 @@ public class ChunkServer implements ChunkServerInterface {
 	 * Initialize the chunk server
 	 */
 	public ChunkServer(){
-		filePath = System.getProperty("user.dir") + "/chunks";
-		if (!Files.exists(Paths.get(filePath))) {
+		filePath = System.getProperty("user.dir");
+		filePath += "\\chunks\\";
+		if (!Files.exists(Paths.get(filePath)) || !Files.isDirectory(Paths.get(filePath))) {			
 			try {
 				Files.createDirectories(Paths.get(filePath));
 			} catch (IOException e) {
@@ -56,7 +57,7 @@ public class ChunkServer implements ChunkServerInterface {
 	 */
 	public String createChunk() {
 		counter++;
-		return "chunks/chunk" + counter;
+		return "chunks\\chunk" + counter;
 	}
 	
 	/**
@@ -87,10 +88,12 @@ public class ChunkServer implements ChunkServerInterface {
 	 */
 	//	read(byte[] b, int off, int len)
 	public byte[] readChunk(String ChunkHandle, int offset, int NumberOfBytes) {
+		if (!Files.exists(Paths.get(ChunkHandle)) || Files.isDirectory(Paths.get(ChunkHandle))) return null;
+		
 		RandomAccessFile raf = null;
 		try {
 			raf = new RandomAccessFile(ChunkHandle, "rws");
-			byte[] chunkArr = new byte[ChunkServer.ChunkSize];
+			byte[] chunkArr = new byte[NumberOfBytes];
 			raf.read(chunkArr, offset, NumberOfBytes);
 			return chunkArr;
 		} catch (IOException e) {
