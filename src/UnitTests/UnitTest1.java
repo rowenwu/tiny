@@ -1,8 +1,6 @@
 package UnitTests;
 
 import java.nio.ByteBuffer;
-
-import com.chunkserver.ChunkServer;
 import com.client.Client;
 
 /**
@@ -24,9 +22,9 @@ public class UnitTest1 {
 	
 	public static void test1(){
 		//Write the chunk and the byte array
-		byte[] payload = new byte[ChunkServer.ChunkSize];
+		byte[] payload = new byte[TestReadAndWrite.ChunkSize];
 		int intSize = Integer.SIZE / Byte.SIZE;	// 4 bytes
-		int num = ChunkServer.ChunkSize / intSize;	//1024 integers
+		int num = TestReadAndWrite.ChunkSize / intSize;	//1024 integers
 		byte[] ValInBytes = ByteBuffer.allocate(intSize).putInt(1).array();
         for (int j=0; j < num; j++){
             for (int k=0; k < intSize; k++)

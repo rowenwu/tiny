@@ -13,8 +13,9 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import com.chunkserver.ChunkServer;
 import com.interfaces.ClientInterface;
+
+import UnitTests.TestReadAndWrite;
 
 /**
  * implementation of interfaces at the client side
@@ -37,11 +38,14 @@ public class Client implements ClientInterface {
 			dos = new DataOutputStream(socket.getOutputStream());
 			din = new DataInputStream(socket.getInputStream());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 	}
 
+	/**
+	 * send the create command
+	 * read and return chunk handle
+	 */
 	public String createChunk() {
 		try {
 			dos.writeChar('c');
@@ -54,14 +58,16 @@ public class Client implements ClientInterface {
 		return null;
 	}
 
+	/**
+	 * send the write command, chunk handle, payload size, and payload to the server 
+	 * read and return the boolean sent back
+	 */
 	public boolean writeChunk(String ChunkHandle, byte[] payload, int offset) {
-		if(offset + payload.length > ChunkServer.ChunkSize) {
+		if(offset + payload.length > TestReadAndWrite.ChunkSize) {
 			System.out.println("The chunk write should be within the range of the file, invalid chunk write!");
 			return false;
 		}
 		try {
-			// send the write command, chunk handle, payload size, and payload to the server 
-			// read and return the boolean sent back
 			dos.writeChar('w');
 			dos.writeUTF(ChunkHandle);
 			dos.writeInt(payload.length);
@@ -70,25 +76,27 @@ public class Client implements ClientInterface {
 			dos.flush();
 			return din.readBoolean();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 		return false;
 	}
 
+	/*
+	 * send the read command, chunk handle, offset, and number of bytes to the server
+	 * read the response into a byte array
+	 */
 	public byte[] readChunk(String ChunkHandle, int offset, int NumberOfBytes) {
-		if(NumberOfBytes + offset > ChunkServer.ChunkSize) {
+		if(NumberOfBytes + offset > TestReadAndWrite.ChunkSize) {
 			System.out.println("The chunk read should be within the range of the file, invalid chunk read!");
 			return null;
 		}
 		try {
-			// send the read command, chunk handle, offset, and number of bytes to the server
-			// read the response into a byte array
 			dos.writeChar('r');
 			dos.writeUTF(ChunkHandle);
 			dos.writeInt(offset); 
 			dos.writeInt(NumberOfBytes); 
 			dos.flush();
+//			System.out.println("Sent read command: " + ChunkHandle + " " + offset + " " + NumberOfBytes); 
 			byte[] byteArr = new byte[NumberOfBytes];
 			din.readFully(byteArr);
 			return byteArr;

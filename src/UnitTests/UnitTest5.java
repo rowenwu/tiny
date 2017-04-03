@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 import org.apache.commons.io.FileUtils;
-
-import com.chunkserver.ChunkServer;
 import com.client.Client;
 
 /**
@@ -35,7 +33,7 @@ public class UnitTest5 {
 			System.out.println("UnitTest5 failed!");
 			return;
 		}
-		int lastChunkSize = (int) (fin.length() % ChunkServer.ChunkSize);
+		int lastChunkSize = (int) (fin.length() % TestReadAndWrite.ChunkSize);
 		// create and write chunk(s) of the file
 		Client client = new Client();
 		TestReadAndWrite trw = new TestReadAndWrite();
@@ -45,7 +43,7 @@ public class UnitTest5 {
 		for(int i = 0; i < MyChunks.length; i++){
 			byte[] data = null;
 			if(i != MyChunks.length - 1){
-				data = client.readChunk(MyChunks[i], 0, ChunkServer.ChunkSize);
+				data = client.readChunk(MyChunks[i], 0, TestReadAndWrite.ChunkSize);
 				output.write(data, 0, data.length);
 			}else{
 				data = client.readChunk(MyChunks[i], 0, lastChunkSize);

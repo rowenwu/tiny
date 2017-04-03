@@ -28,8 +28,7 @@ public class ChunkServer implements ChunkServerInterface {
 	private static int port = 9999;
 	private static ServerSocket ss;
 	private static Socket socket;
-	private static DataOutputStream dos;
-	private static DataInputStream din;
+	
 
 	public static void main(String[] args) {
 		new ChunkServer();
@@ -73,6 +72,8 @@ public class ChunkServer implements ChunkServerInterface {
 	 * Receive and send data to a single client through input/output streams 
 	 */
 	class ChunkServerThread extends Thread {
+		private DataOutputStream dos;
+		private DataInputStream din;
 		private Socket socket;
 
 		public ChunkServerThread(Socket socket) {
@@ -84,13 +85,13 @@ public class ChunkServer implements ChunkServerInterface {
 				dos = new DataOutputStream(socket.getOutputStream());
 				din = new DataInputStream(socket.getInputStream());
 				
+				// continuously receive create, read, or write commands from the client
 				while(true){
 					char command = din.readChar();
-					System.out.println("command: " + command);
 					if(command == 'c') sendChunkHandle();
-					else if (command == 'r') sendReadChunk();
+					else if (command == 'r') 
+						sendReadChunk();
 					else if (command == 'w') receiveWriteChunk();	
-					else System.out.println("what the " + command);
 				}
 			} catch (IOException e) {
 				System.out.println("Client connection closed");
@@ -111,17 +112,18 @@ public class ChunkServer implements ChunkServerInterface {
 		
 		private void sendReadChunk() throws IOException {
 			String chunkHandle = din.readUTF();
-			byte[] chunk = readChunk(new String(chunkHandle), din.readInt(), din.readInt());
+//			System.out.println("read chunk handle: " + chunkHandle);
+			byte[] chunk = readChunk(chunkHandle, din.readInt(), din.readInt());
 			dos.write(chunk);
 			dos.flush();
 		}
 		
 		private void receiveWriteChunk() throws IOException {
-			String byteHandle = din.readUTF();
+			String chunkHandle = din.readUTF();
 			byte[] payload = new byte[din.readInt()];
 			din.readFully(payload);
 			int offset = din.readInt();
-			dos.writeBoolean(writeChunk(new String(byteHandle), payload, offset));
+			dos.writeBoolean(writeChunk(chunkHandle, payload, offset));
 			dos.flush();
 		}
 	}
@@ -139,13 +141,12 @@ public class ChunkServer implements ChunkServerInterface {
 	 * Write the byte array to the chunk at the specified offset
 	 * The byte array size should be no greater than 4KB
 	 */
-	//write(byte[] b, int off, int len)
 	public synchronized boolean writeChunk(String ChunkHandle, byte[] payload, int offset) {
-		System.out.println("writing");
 		RandomAccessFile raf = null;
 		try {
 			raf = new RandomAccessFile(ChunkHandle, "rws");
-			raf.write(payload, offset, payload.length);
+			raf.seek(offset);
+			raf.write(payload, 0, payload.length);
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -162,7 +163,6 @@ public class ChunkServer implements ChunkServerInterface {
 	/**
 	 * read the chunk at the specific offset
 	 */
-	//	read(byte[] b, int off, int len)
 	public synchronized byte[] readChunk(String ChunkHandle, int offset, int NumberOfBytes) {
 		if (!Files.exists(Paths.get(ChunkHandle)) || Files.isDirectory(Paths.get(ChunkHandle))) return null;
 
@@ -170,7 +170,9 @@ public class ChunkServer implements ChunkServerInterface {
 		try {
 			raf = new RandomAccessFile(ChunkHandle, "rws");
 			byte[] chunkArr = new byte[NumberOfBytes];
-			raf.read(chunkArr, offset, NumberOfBytes);
+			raf.seek(offset);
+			if(raf.read(chunkArr, 0, NumberOfBytes) == -1)
+				System.out.println("Not enough bytes read");
 			return chunkArr;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -183,7 +185,5 @@ public class ChunkServer implements ChunkServerInterface {
 		}
 		return null;
 	}
-
-
 
 }

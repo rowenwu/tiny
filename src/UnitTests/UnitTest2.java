@@ -1,8 +1,6 @@
 package UnitTests;
 
 import java.nio.ByteBuffer;
-
-import com.chunkserver.ChunkServer;
 import com.client.Client;
 
 /**
@@ -23,8 +21,8 @@ public class UnitTest2 {
 		Client client = new Client();
 		String handle = ut1.handle;
 		byte[] ValInBytes = ByteBuffer.allocate(4).putInt(1).array();
-		byte[] data = new byte[ChunkServer.ChunkSize];
-        data = client.readChunk(handle, 0, ChunkServer.ChunkSize);
+		byte[] data = new byte[TestReadAndWrite.ChunkSize];
+        data = client.readChunk(handle, 0, TestReadAndWrite.ChunkSize);
         
         //Verify that the content of the array of bytes matches the value 1
         for (int j=0; j < 1024; j++){
